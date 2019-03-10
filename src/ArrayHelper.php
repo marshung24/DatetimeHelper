@@ -56,6 +56,48 @@ class ArrayHelper
     }
     
     /**
+     * Get Data content by index
+     * 
+     * Usage:
+     * - $data = ['user' => ['name' => 'Mars', 'birthday' => '2000-01-01']];
+     * - var_export(getContent($data)); // full $data content
+     * - var_export(getContent($data, 'user')); // ['name' => 'Mars', 'birthday' => '2000-01-01']
+     * - echo getContent($data, ['user', 'name']); // Mars
+     * 
+     * @param array $data
+     * @param array|string $indexTo Content index of the data you want to get
+     * @param bool $exception default false
+     * @throws \Exception
+     * @return array
+     */
+    public static function getContent(Array $data, $indexTo = [], $exception = false)
+    {
+        //* Arguments prepare */
+        $indexTo = (array)$indexTo;
+        $indexed = [];
+        
+        foreach ($indexTo as $idx) {
+            // save runed index
+            $indexed[] = $idx;
+            
+            if (isset($data[$idx])) {
+                // If exists, Get values by recursion
+                $data = $data[$idx];
+            } else {
+                // Not exists, Exception or return []
+                if ($exception) {
+                    throw new \Exception('Error index: ' . implode(' => ', $indexed), 400);
+                } else {
+                    $data = [];
+                    break;
+                }
+            }
+        }
+        
+        return $data;
+    }
+    
+    /**
      * 從目標資料中的指定多欄位搜集資料，並組成陣列清單
      * 
      * 一般狀況，使用array_column()內建函式可完成資料搜集，但如需搜集多欄位資料則無法使用array_column()
