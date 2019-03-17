@@ -16,7 +16,7 @@ class ArrayHelper
      */
     
     /**
-     * Index by keys
+     * Data re-index by keys
      *
      * @param mixed $data Array/stdClass data for handling
      * @param mixed $keys keys for index key (Array/string)
@@ -31,7 +31,9 @@ class ArrayHelper
     
     /**
      * Group by keys
-     *
+     * 
+     * Data re-index and Group by keys
+     * 
      * @param array|stdClass $data Array/stdClass data for handling
      * @param string|array $keys
      * @param boolean $obj2array Array content convert to array (when object)
@@ -43,7 +45,7 @@ class ArrayHelper
     }
     
     /**
-     * Index Only by keys, No Data
+     * Data re-index by keys, No Data
      *
      * @param array|stdClass $data Array/stdClass data for handling
      * @param string|array $keys
@@ -58,17 +60,22 @@ class ArrayHelper
     /**
      * Get Data content by index
      * 
+     * - Pay attention to the return value, 
+     * - If no $indexTo target will return the empty array,
+     * - When the target may be 0 or null, you need to pay attention to the judgment.
+     * 
      * Usage:
      * - $data = ['user' => ['name' => 'Mars', 'birthday' => '2000-01-01']];
-     * - var_export(getContent($data)); // full $data content
-     * - var_export(getContent($data, 'user')); // ['name' => 'Mars', 'birthday' => '2000-01-01']
-     * - echo getContent($data, ['user', 'name']); // Mars
+     * - var_export(ArrayHelper::getContent($data)); // full $data content
+     * - var_export(ArrayHelper::getContent($data, 'user')); // ['name' => 'Mars', 'birthday' => '2000-01-01']
+     * - var_export(ArrayHelper::getContent($data, ['user', 'name'])); // Mars
+     * - var_export(ArrayHelper::getContent($data, ['user', 'name', 'aaa'])); // []
      * 
      * @param array $data
      * @param array|string $indexTo Content index of the data you want to get
      * @param bool $exception default false
      * @throws \Exception
-     * @return array
+     * @return array|mixed
      */
     public static function getContent(Array $data, $indexTo = [], $exception = false)
     {
@@ -80,7 +87,7 @@ class ArrayHelper
             // save runed index
             $indexed[] = $idx;
             
-            if (isset($data[$idx])) {
+            if (is_array($data) && array_key_exists($idx, $data)) {
                 // If exists, Get values by recursion
                 $data = $data[$idx];
             } else {
@@ -98,7 +105,10 @@ class ArrayHelper
     }
     
     /**
-     * 從目標資料中的指定多欄位搜集資料，並組成陣列清單
+     * Data gather by list
+     * 
+     * 依欄位清單，對目標資料收集資料並分類
+     * Collect and classify target data according to the list of fields
      * 
      * 一般狀況，使用array_column()內建函式可完成資料搜集，但如需搜集多欄位資料則無法使用array_column()
      * 
@@ -106,9 +116,9 @@ class ArrayHelper
      * 使用範例：
      * - $data = $this->db->select('*')->from('users')->get()->result();
      * - 欄位 manager, sign_manager, create_user 值放在同一個一維陣列中
-     * - $ssnList1 = \marshung\helper\ArrayHelper::gather($data, array('manager', 'sign_manager','create_user'), 1);
+     * - $ssnList1 = ArrayHelper::gather($data, array('manager', 'sign_manager','create_user'), 1);
      * - 欄位 manager 值放一個陣列, 欄位 sign_manager, create_user 值放同一陣列中，形成2維陣列 $dataList2 = ['manager' => [], 'other' => []];
-     * - $ssnList2 = \marshung\helper\ArrayHelper::gather($data, array('manager' => array('manager'), 'other' => array('sign_manager','create_user')), 1);
+     * - $ssnList2 = ArrayHelper::gather($data, array('manager' => array('manager'), 'other' => array('sign_manager','create_user')), 1);
      *
      * 遞迴效率太差 - 改成遞迴到最後一層陣列後直接處理，不再往下遞迴
      *
@@ -163,9 +173,68 @@ class ArrayHelper
         
         return $dataList;
     }
-    
-    
-    
+
+    /**
+     * Array Deff Recursive
+     * 
+     * Compare $srcArray with $contrast and display it if something on $srcArray is not on $contrast.
+     * 
+     * @param array $srcArray            
+     * @param array $contrast            
+     * @return array
+     */
+    public static function arrayDiffRecursive(Array $srcArray, $contrast)
+    {
+        $diffArray = [];
+        
+        foreach ($srcArray as $key => $value) {
+            if (is_array($contrast) && array_key_exists($key, $contrast)) {
+                if (is_array($value)) {
+                    $aRecursiveDiff = self::arrayDiffRecursive($value, $contrast[$key]);
+                    if (! empty($aRecursiveDiff)) {
+                        $diffArray[$key] = $aRecursiveDiff;
+                    }
+                } elseif ($value != $contrast[$key]) {
+                    $diffArray[$key] = $value;
+                }
+            } else {
+                $diffArray[$key] = $value;
+            }
+        }
+        
+        return $diffArray;
+    }
+
+    /**
+     * Array Sort Recursive
+     * 
+     * @param array $srcArray
+     * @param string $type ksort(default), krsort, sort, rsort
+     */
+    public static function arraySortRecursive(Array & $srcArray, $type = 'ksort')
+    {
+        // Run ksort(default), krsort, sort, rsort
+        switch($type) {
+            case 'ksort':
+            default:
+                ksort($srcArray);
+                break;
+            case 'krsort':
+                krsort($srcArray);
+                break;
+            case 'sort':
+                sort($srcArray);
+                break;
+            case 'rsort':
+                rsort($srcArray);
+                break;
+        }
+        
+        // If child element is array, recursive
+        foreach ($srcArray as $key => & $value) {
+            is_array($value) && self::arraySortRecursive($value, $type);
+        }
+    }
     
     /**
      * **********************************************

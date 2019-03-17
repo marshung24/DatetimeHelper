@@ -19,30 +19,63 @@ class DatetimeHelper
     
     
     /**
-     * 日期計算
-     * @param string $date
+     * Date calculation - increase
+     * 
+     * @param string $date Base date
+     * @param string $add Add number
+     * @param string $unit Add Unit(day,month,year)
+     * @param string $format
+     * @return string
      */
     public static function dateAdd($date, $add = '1', $unit = 'day', $format = 'Y-m-d')
     {
-        return date($format, strtotime($date . ' + ' . $add. ' ' . $unit));
+        return self::dateCal($date, $add, $unit, $format);
     }
     
     /**
-     * 日期計算
-     * @param string $date
+     * Date calculation - reduction
+     * 
+     * @param string $date $date Base date
+     * @param string $reduce Reduce number
+     * @param string $unit Reduce Unit(day,month,year)
+     * @param string $format
+     * @return string
      */
     public static function dateReduce($date, $reduce = '1', $unit = 'day', $format = 'Y-m-d')
     {
-        return date($format, strtotime($date . ' - ' . $reduce. ' ' . $unit));
+        return self::dateCal($date, '-'.$reduce, $unit, $format);
     }
     
     /**
-     * 日期計算
-     * @param string $date
+     * Date calculation
+     * 
+     * @param string $date $date Base date
+     * @param string $difference number(positive:add, negative:reduce)
+     * @param string $unit Unit(day,month,year)
+     * @param string $format
+     * @return string
      */
     public static function dateCal($date, $difference = '1', $unit = 'day', $format = 'Y-m-d')
     {
-        return date($format, strtotime($date . ($difference < 0 ? ' ': ' + ') . $difference . ' ' . $unit));
+        if (in_array($unit, ['month','year','months','years'])) {
+            // Origin date timestamp
+            $timestamp = strtotime($date);
+            // Change the date to the first day
+            $rebaseDate = date('Y-m-01 H:i:s', $timestamp);
+            // Use $rebaseDate to calculate and get timestamp
+            $rbTimestamp = strtotime($rebaseDate . ($difference < 0 ? ' ': ' + ') . $difference . ' ' . $unit);
+            // Get the actual date, compare the original date to the last day after the calculation
+            $day = date('d', $timestamp);
+            $rbLastDay = date('t', $rbTimestamp);
+            $realDay = $rbLastDay < $day ? $rbLastDay : $day;
+            // Restore to real time
+            $renewDate = date('Y-m-'.$realDay.' H:i:s', $rbTimestamp);
+            // format
+            return date($format, strtotime($renewDate));
+        } else {
+            // No months and years, happy to do
+            return date($format, strtotime($date . ($difference < 0 ? ' ': ' + ') . $difference . ' ' . $unit));
+        }
     }
     
     /**
@@ -64,30 +97,30 @@ class DatetimeHelper
     {}
     
     /**
-     * 取得日期迭代器 - 以日為單位迭代日期
+     * Get Date Iterator - Iteration Date in Days
      *
      * Usage:
      * $daterange = \app\helpers\DateTimeHelper::dateIterator('2018-01-01', '2018-01-31');
      * foreach($daterange as $date){
-     *     echo $date->format("Y-m-d") . "<br>";
+     *     echo $date->format('Y-m-d') . '<br>';
      * }
      *
      * @author  Mars Hung
      *
-     * @param date $start
-     *            開始日期
-     * @param date $end
-     *            結束日期
+     * @param date $startDate
+     *            start date
+     * @param date $endDate
+     *            end date
      * @return DateTime
      */
-    public static function dateIterator($start, $end)
+    public static function dateIterator($startDate, $endDate)
     {
-        $start = new \DateTime($start);
-        $end = new \DateTime($end);
-        $end = $end->modify('+1 day');
+        $startDate = new \DateTime($startDate);
+        $endDate = new \DateTime($endDate);
+        $endDate = $endDate->modify('+1 day');
         
         $interval = new \DateInterval('P1D');
-        $daterange = new \DatePeriod($start, $interval, $end);
+        $daterange = new \DatePeriod($startDate, $interval, $endDate);
         
         return $daterange;
     }
@@ -100,24 +133,24 @@ class DatetimeHelper
      */
     
     /**
-     * 判斷日期是否合法
+     * Determine if the date is legal
      *
      * @param string $date
-     *            日期字串 YYYY-MM-DD
+     *            date string(YYYY-MM-DD)
      * @return boolean
      */
     public static function isDate($date)
     {
-        // 不合法，但常用
+        // Not legal, but commonly used
         if ($date == '0000-00-00') {
             return true;
         }
-        // 檢查
+        // Check
         if (preg_match('|^([0-9]{4})[\-\/]([0-9]{1,2})[\-\/]([0-9]{1,2})$|', $date, $matches)) {
-            // 有分隔符號 Y-m-d, Y/m/d
+            // Have Separator Y-m-d, Y/m/d
             return checkdate($matches[2], $matches[3], $matches[1]);
         } elseif (preg_match('|^([0-9]{4})([0-9]{2})([0-9]{2})$|', $date, $matches)) {
-            // 無分隔符號 Ymd
+            // No Separator Ymd
             return checkdate($matches[2], $matches[3], $matches[1]);
         }
         
