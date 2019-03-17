@@ -174,17 +174,20 @@ class ArrayHelper
      */
     
     /**
-    * Refactor Array $data structure by $keys
-    *
-    * @param array|stdClass $data Array/stdClass data for handling
-    * @param string|array $keys
-    * @param boolean $obj2array Array content convert to array (when object)
-    * @param string $type indexBy(index)/groupBy(group)/only index,no data(indexOnly/noData)
-    */
+     * Refactor Array $data structure by $keys
+     *
+     * @param array|stdClass $data
+     *            Array/stdClass data for handling
+     * @param string|array $keys
+     * @param boolean $obj2array
+     *            Array content convert to array (when object)
+     * @param string $type
+     *            indexBy(index)/groupBy(group)/only index,no data(indexOnly/noData)
+     */
     protected static function _refactorBy(& $data, $keys, $obj2array = false, $type = 'index')
     {
         // 參數處理
-        $keys = (array)$keys;
+        $keys = (array) $keys;
         
         $result = [];
         
@@ -194,6 +197,8 @@ class ArrayHelper
             $getIndex = false;
             // 位置初炲化 - 傳址
             $rRefer = & $result;
+            // 可用的index清單
+            $indexs = [];
             
             // 遍歷$keys陣列 - 建構索引位置
             foreach ($keys as $key) {
@@ -212,16 +217,21 @@ class ArrayHelper
                     break;
                 }
                 
-                // 變更位置 - 傳址
-                $rRefer = & $rRefer[$vKey];
+                // 記錄可用的index
+                $indexs[] = $vKey;
                 
                 // 本次索引完成
                 $getIndex = true;
             }
             
-            // 略過無法取得索引資料
+            // 略過無法取得索引或索引不完整的資料
             if (! $getIndex) {
                 continue;
+            }
+            
+            // 變更位置 - 傳址
+            foreach ($indexs as $idx) {
+                $rRefer = & $rRefer[$idx];
             }
             
             // 將資料寫入索引位置
@@ -229,11 +239,11 @@ class ArrayHelper
                 case 'index':
                 case 'indexBy':
                 default:
-                    $rRefer = $obj2array ? (array)$row : $row;
+                    $rRefer = $obj2array ? (array) $row : $row;
                     break;
                 case 'group':
                 case 'groupBy':
-                    $rRefer[] = $obj2array ? (array)$row : $row;
+                    $rRefer[] = $obj2array ? (array) $row : $row;
                     break;
                 case 'indexOnly':
                 case 'noData':
