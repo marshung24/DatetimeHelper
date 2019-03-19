@@ -183,14 +183,14 @@ class ArrayHelper
      * @param array $contrast            
      * @return array
      */
-    public static function arrayDiffRecursive(Array $srcArray, $contrast)
+    public static function diffRecursive(Array $srcArray, $contrast)
     {
         $diffArray = [];
         
         foreach ($srcArray as $key => $value) {
             if (is_array($contrast) && array_key_exists($key, $contrast)) {
                 if (is_array($value)) {
-                    $aRecursiveDiff = self::arrayDiffRecursive($value, $contrast[$key]);
+                    $aRecursiveDiff = self::diffRecursive($value, $contrast[$key]);
                     if (! empty($aRecursiveDiff)) {
                         $diffArray[$key] = $aRecursiveDiff;
                     }
@@ -211,7 +211,7 @@ class ArrayHelper
      * @param array $srcArray
      * @param string $type ksort(default), krsort, sort, rsort
      */
-    public static function arraySortRecursive(Array & $srcArray, $type = 'ksort')
+    public static function sortRecursive(Array & $srcArray, $type = 'ksort')
     {
         // Run ksort(default), krsort, sort, rsort
         switch($type) {
@@ -232,7 +232,7 @@ class ArrayHelper
         
         // If child element is array, recursive
         foreach ($srcArray as $key => & $value) {
-            is_array($value) && self::arraySortRecursive($value, $type);
+            is_array($value) && self::sortRecursive($value, $type);
         }
     }
     

@@ -40,9 +40,9 @@ Data re-index by keys
 ```php
 indexBy(Array & $data, Array|String $keys, Bool $obj2array = false) : array
 ```
-> Since $data is a reference, $data will change after indexBy() is executed.
-> Since $data is a reference, the return is useless.
-> If you want to keep $data, you can clone it before using it.
+> Since $data is a reference, $data will change after indexBy() is executed.  
+> Since $data is a reference, the return is useless.  
+> If you want to keep $data, you can clone it before using it.  
 
 Example :
 ```php
@@ -71,9 +71,9 @@ Data re-index and Group by keys
 ```php
 groupBy(Array & $data, Array|String $keys, Bool $obj2array = false) : array
 ```
-> Since $data is a reference, $data will change after indexBy() is executed.
-> Since $data is a reference, the return is useless.
-> If you want to keep $data, you can clone it before using it.
+> Since $data is a reference, $data will change after indexBy() is executed.  
+> Since $data is a reference, the return is useless.  
+> If you want to keep $data, you can clone it before using it.  
 
 Example :
 ```php
@@ -108,9 +108,9 @@ Data re-index by keys, No Data
 ```php
 indexOnly(Array & $data, Array|String $keys, Bool $obj2array = false) : array
 ```
-> Since $data is a reference, $data will change after indexBy() is executed.
-> Since $data is a reference, the return is useless.
-> If you want to keep $data, you can clone it before using it.
+> Since $data is a reference, $data will change after indexBy() is executed.  
+> Since $data is a reference, the return is useless.  
+> If you want to keep $data, you can clone it before using it.  
 
 Example :
 ```php
@@ -185,7 +185,7 @@ $data = [
 Example 1 :
 > Field `manager`, `s_manager`, `c_user values` are placed in the same one-dimensional array
 ```php
-$ssnList1 = ArrayHelper::gatherData($data, array('manager', 's_manager','c_user'), 1);
+$ssnList1 = ArrayHelper::gather($data, array('manager', 's_manager','c_user'), 1);
 ```
 $ssnList1 reqult:
 ```php
@@ -195,22 +195,22 @@ $ssnList1 reqult:
 Example 2 :
 > The field `manager` is placed in an array, the fields `s_manager`, and the `c_user` values are placed in the same array. Form a 2-dimensional array
 ```php
-$ssnList2 = ArrayHelper::gatherData($data, array('manager' => array('manager'), 'other' => array('s_manager','c_user')), 1);
+$ssnList2 = ArrayHelper::gather($data, array('manager' => array('manager'), 'other' => array('s_manager','c_user')), 1);
 ```
 $ssnList2 reqult:
 ```php
 [
-	'manager' => [1 => '1',61 => '61',71 => '71',75 => '75'],
+    'manager' => [1 => '1',61 => '61',71 => '71',75 => '75'],
     'other' => [1 => '1',506 => '506',0 => '0',118 => '118',61 => '61']
 ];
 ```
 
 
-### arrayDiffRecursive()
+### diffRecursive()
 Array Deff Recursive
 > Compare $srcArray with $contrast and display it if something on $srcArray is not on $contrast.
 ```php
-arrayDiffRecursive(Array $srcArray, $contrast) : array
+diffRecursive(Array $srcArray, $contrast) : array
 ```
 
 Example :
@@ -226,7 +226,7 @@ $data2 = [
     2 => ['c_sn' => 'a110', 'u_sn' => 'b2', 'u_no' => 'c024', 'u_name' => 'user name 3'],
 ];
 
-$diff = ArrayHelper::arrayDiffRecursive($data1, $data2);
+$diff = ArrayHelper::diffRecursive($data1, $data2);
 ```
 $diff result :
 ```php
@@ -237,13 +237,13 @@ $diff result :
 ```
 
 
-### arraySortRecursive()
+### sortRecursive()
 Array Sort Recursive
 ```php
-arraySortRecursive(Array & $srcArray, $type = 'ksort') : void
+sortRecursive(Array & $srcArray, $type = 'ksort') : void
 ```
-> $srcArray is a reference
-> $type : ksort(default), krsort, sort, rsort
+> $srcArray is a reference  
+> $type : ksort(default), krsort, sort, rsort  
 
 Example :
 ```php
@@ -259,8 +259,8 @@ $data1 = [
 
 $data2 = $data1;
 
-ArrayHelper::arraySortRecursive($data1, 'ksort');
-ArrayHelper::arraySortRecursive($data2, 'krsort');
+ArrayHelper::sortRecursive($data1, 'ksort');
+ArrayHelper::sortRecursive($data2, 'krsort');
 ```
 
 $data1 result:
@@ -357,8 +357,8 @@ Date calculation
 ```php
 dateCal(String $date, Int $difference = '1', String $unit = 'day', String $format = 'Y-m-d') : string
 ```
-> $difference positive is add, negative is reduce
-> $unit: day,month,year
+> $difference positive is add, negative is reduce  
+> $unit: day,month,year  
 
 Example :
 ```php
