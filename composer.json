@@ -11,8 +11,9 @@
         }
     ],
     "autoload": {
-        "psr-4": { "marshung\\helper\\": "src" }
+        "psr-4": { "marshung\\helper\\": "src", "marshung\\helperTest\\": "test" }
     },
     "minimum-stability": "stable",
-    "require": {}
+    "require": {
+    }
 }

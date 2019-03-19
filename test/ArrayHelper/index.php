@@ -1,13 +1,13 @@
 <?php
 include_once '../../vendor/autoload.php';
 
+
 /**
  * Need Unit Test
  */
 
-use \marshung\helper\ArrayHelper;
-use \marshung\helper\DatetimeHelper;
-use \marshung\helper\EncodeHelper;
+use marshung\helperTest\tools\DevTools;
+use marshung\helper\ArrayHelper;
 
 
 function indexBy() {
@@ -25,12 +25,8 @@ function indexBy() {
     
     ArrayHelper::indexBy($data, ['c_sn','u_sn','u_no']);
     
-    $theSame = theSame($data, $expected);
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
+    $theSame = DevTools::theSame($data, $expected);
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 function groupBy()
@@ -56,12 +52,8 @@ function groupBy()
     ];
     
     ArrayHelper::groupBy($data, ['c_sn','u_sn','u_no']);
-    $theSame = theSame($data, $expected);
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
+    $theSame = DevTools::theSame($data, $expected);
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 
@@ -85,12 +77,8 @@ function indexOnly()
     
     ArrayHelper::indexOnly($data, ['c_sn','u_sn','u_no']);
     
-    $theSame = theSame($data, $expected);
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
+    $theSame = DevTools::theSame($data, $expected);
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 function getContent()
@@ -101,15 +89,15 @@ function getContent()
     
     $output = ArrayHelper::getContent($data);
     // $output: ['user' => ['name' => 'Mars', 'birthday' => '2000-01-01']];
-    $theSame = $theSame && theSame($output, ['user' => ['name' => 'Mars', 'birthday' => '2000-01-01']]);
+    $theSame = $theSame && DevTools::theSame($output, ['user' => ['name' => 'Mars', 'birthday' => '2000-01-01']]);
     
     
     $output = ArrayHelper::getContent($data, 'user');
-    $theSame = $theSame && theSame($output, ['name' => 'Mars', 'birthday' => '2000-01-01']);
+    $theSame = $theSame && DevTools::theSame($output, ['name' => 'Mars', 'birthday' => '2000-01-01']);
     // or
     $output = ArrayHelper::getContent($data, ['user']);
     // $output: ['name' => 'Mars', 'birthday' => '2000-01-01'];
-    $theSame = $theSame && theSame($output, ['name' => 'Mars', 'birthday' => '2000-01-01']);
+    $theSame = $theSame && DevTools::theSame($output, ['name' => 'Mars', 'birthday' => '2000-01-01']);
     
     $output = ArrayHelper::getContent($data, ['user', 'name']);
     // $outpu: Mars
@@ -117,13 +105,9 @@ function getContent()
     
     $output = ArrayHelper::getContent($data, ['user', 'name', 'aaa']);
     // $outpu: []
-    $theSame = $theSame && theSame($output, []);
+    $theSame = $theSame && DevTools::theSame($output, []);
     
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 
@@ -142,17 +126,13 @@ function gather()
     $ssnList1 = ArrayHelper::gather($data, array('manager', 's_manager','c_user'), 1);
     $ssnList2 = ArrayHelper::gather($data, array('manager' => array('manager'), 'other' => array('s_manager','c_user')), 1);
     
-    $theSame = $theSame && theSame($ssnList1, [1 => '1',506 => '506',61 => '61',0 => '0',118 => '118',71 => '71',75 => '75']);
-    $theSame = $theSame && theSame($ssnList2, [
+    $theSame = $theSame && DevTools::theSame($ssnList1, [1 => '1',506 => '506',61 => '61',0 => '0',118 => '118',71 => '71',75 => '75']);
+    $theSame = $theSame && DevTools::theSame($ssnList2, [
         'manager' => [1 => '1',61 => '61',71 => '71',75 => '75'],
         'other' => [1 => '1',506 => '506',0 => '0',118 => '118',61 => '61']
     ]);
     
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 function diffRecursive()
@@ -176,12 +156,8 @@ function diffRecursive()
     
     $arrayDiff = ArrayHelper::diffRecursive($data1, $data2);
     
-    $theSame = theSame($arrayDiff, $expected);
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
+    $theSame = DevTools::theSame($arrayDiff, $expected);
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 function sortRecursive()
@@ -223,20 +199,9 @@ function sortRecursive()
     
     $theSame = true;
     
-    $theSame = $theSame && theSame($data1, $expected1);
-    $theSame = $theSame && theSame($data2, $expected2);
-    if ($theSame) {
-        echo __FUNCTION__ . ': OK...'."\n\n";
-    } else {
-        echo __FUNCTION__ . ': Different !!!'."\n\n";
-    }
-}
-
-
-
-function theSame($obj1, $obj2)
-{
-    return json_encode($obj1) == json_encode($obj2);
+    $theSame = $theSame && DevTools::theSame($data1, $expected1);
+    $theSame = $theSame && DevTools::theSame($data2, $expected2);
+    DevTools::isTheSame($theSame, __FUNCTION__);
 }
 
 
