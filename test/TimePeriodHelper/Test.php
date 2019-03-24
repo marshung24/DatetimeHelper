@@ -7,6 +7,8 @@ use marshung\helperTest\tools\DevTools;
 /**
  * Test for TimePeriodHelper
  * 
+ * Expect to use phpUnit
+ * 
  * @author Mars Hung <tfaredxj@gmail.com>
  *
  */
@@ -69,9 +71,16 @@ class Test
         $templete2 = self::testDiffData2();
         $expected = self::testDiffExpected();
         
+        // The same
         $result = TimePeriodHelper::diff($templete1, $templete2);
+        $theSame1 = DevTools::theSame($result, $expected, $detail);
         
-        $theSame = DevTools::theSame($result, $expected, $detail);
+        // Need Different
+        $result = TimePeriodHelper::diff($templete1, $templete2, false);
+        $theSame2 = DevTools::theSame($result, $expected, $detail);
+        
+        $theSame = $theSame1 && ! $theSame2;
+        
         DevTools::isTheSame($theSame, __FUNCTION__);
     }
     
@@ -86,9 +95,16 @@ class Test
         $templete2 = self::testIntersectData2();
         $expected = self::testIntersectExpected();
         
+        // The same
         $result = TimePeriodHelper::intersect($templete1, $templete2);
+        $theSame1 = DevTools::theSame($result, $expected, $detail);
         
-        $theSame = DevTools::theSame($result, $expected, $detail);
+        // Need Different
+        $result = TimePeriodHelper::intersect($templete1, $templete2, false);
+        $theSame2 = DevTools::theSame($result, $expected, $detail);
+        
+        $theSame = $theSame1 && ! $theSame2;
+        
         DevTools::isTheSame($theSame, __FUNCTION__);
     }
     
@@ -128,7 +144,167 @@ class Test
         DevTools::isTheSame($theSame, __FUNCTION__);
     }
     
+    /**
+     * Test Gap
+     *
+     * @param string $detail
+     */
+    public static function testGap($detail = false)
+    {
+        $templete = self::testGapData();
+        $expected = self::testGapExpected();
+        
+        // The same
+        $result = TimePeriodHelper::gap($templete);
+        $theSame1 = DevTools::theSame($result, $expected, $detail);
+        
+        // Need Different
+        $result = TimePeriodHelper::gap($templete, false);
+        $theSame2 = DevTools::theSame($result, $expected, $detail);
+        
+        $theSame = $theSame1 && ! $theSame2;
+        
+        DevTools::isTheSame($theSame, __FUNCTION__);
+    }
     
+    /**
+     * Test Time
+     *
+     * @param string $detail
+     */
+    public static function testTime($detail = false)
+    {
+        $templete = self::testTimeData();
+        $expected = self::testTimeExpected();
+        
+        // The same
+        TimePeriodHelper::setUnit('second');
+        $result = TimePeriodHelper::time($templete);
+        $theSame1 = DevTools::theSame($result, $expected, $detail);
+        
+        // Need Different
+        $result = TimePeriodHelper::time($templete, false);
+        $theSame2 = DevTools::theSame($result, $expected, $detail);
+        
+        // The same
+        TimePeriodHelper::setUnit('minutes');
+        $result = TimePeriodHelper::time($templete);
+        $theSame3 = DevTools::theSame($result, floor($expected / 60), $detail);
+        
+        // The same
+        TimePeriodHelper::setUnit('h');
+        $result = TimePeriodHelper::time($templete);
+        $theSame4 = DevTools::theSame($result, floor($expected / 3600), $detail);
+        
+        $theSame = $theSame1 && ! $theSame2 && $theSame3 && $theSame4;
+        
+        DevTools::isTheSame($theSame, __FUNCTION__);
+    }
+    
+    /**
+     * Test Format
+     *
+     * @param string $detail
+     */
+    public static function testFormat($detail = false)
+    {
+        $templete = self::testFormatData();
+        $expectedS = self::testFormatExpectedS();
+        $expectedM = self::testFormatExpectedM();
+        $expectedH = self::testFormatExpectedH();
+        
+        // The same
+        TimePeriodHelper::setUnit('s');
+        $result = TimePeriodHelper::format($templete);
+        $theSame1 = DevTools::theSame($result, $expectedS, $detail);
+        
+        // The same
+        TimePeriodHelper::setUnit('minute');
+        $result = TimePeriodHelper::format($templete);
+        $theSame2 = DevTools::theSame($result, $expectedM, $detail);
+        
+        // The same
+        TimePeriodHelper::setUnit('hours');
+        $result = TimePeriodHelper::format($templete);
+        $theSame3 = DevTools::theSame($result, $expectedH, $detail);
+        
+        // The same
+        $result = TimePeriodHelper::format($templete);
+        $theSame4 = DevTools::theSame($result, $expectedH, $detail);
+        
+        // The same
+        $result = TimePeriodHelper::format($templete, 'second');
+        $theSame5 = DevTools::theSame($result, $expectedS, $detail);
+        
+        // Need Different
+        $result = TimePeriodHelper::format($templete);
+        $theSame6 = DevTools::theSame($result, $expectedS, $detail);
+        
+        $theSame = $theSame1 && $theSame2 && $theSame3 && $theSame4 && $theSame5 && ! $theSame6;
+        
+        DevTools::isTheSame($theSame, __FUNCTION__);
+    }
+    
+    /**
+     * Test Validate
+     *
+     * @param string $detail
+     */
+    public static function testValidate($detail = false)
+    {
+        $templete1 = self::testValidateData1();
+        $templete2 = self::testValidateData2();
+        $expected1 = self::testValidateExpected1();
+        $expected2 = self::testValidateExpected2();
+        
+        // The same
+        try {
+            $result1 = TimePeriodHelper::validate($templete1);
+        } catch (\Exception $e) {
+            $result1 = false;
+        }
+        $theSame1 = DevTools::theSame($result1, $expected1, $detail);
+        
+        // The same
+        try {
+            $result2 = TimePeriodHelper::validate($templete2);
+        } catch (\Exception $e) {
+            $result2 = false;
+        }
+        $theSame2 = DevTools::theSame($result2, $expected2, $detail);
+        
+        $theSame = $theSame1 && $theSame2;
+        
+        DevTools::isTheSame($theSame, __FUNCTION__);
+    }
+    
+    /**
+     * Test Filter
+     *
+     * @param string $detail
+     */
+    public static function testFilter($detail = false)
+    {
+        $templete1 = self::testFilterData1();
+        $templete2 = self::testFilterData2();
+        $expected1 = self::testFilterExpected1();
+        $expected2 = self::testFilterExpected2();
+        
+        // The same
+        $result1 = TimePeriodHelper::filter($templete1);
+        $theSame1 = DevTools::theSame($result1, $expected1, $detail);
+        
+        // The same
+        $result2 = TimePeriodHelper::filter($templete2);
+        $theSame2 = DevTools::theSame($result2, $expected2, $detail);
+        
+        // Need Different
+        $theSame3 = DevTools::theSame($result1, $expected2, $detail);
+        
+        $theSame = $theSame1 && $theSame2 && ! $theSame3;
+        
+        DevTools::isTheSame($theSame, __FUNCTION__);
+    }
     
     
     /**
@@ -188,10 +364,10 @@ class Test
     public static function testUnionData1()
     {
         return [
-            ['2019-01-04 10:00:00','2019-01-04 12:00:00'],
             ['2019-01-04 13:00:00','2019-01-04 15:00:00'],
-            ['2019-01-04 15:00:00','2019-01-04 18:00:00'],
-            ['2019-01-04 19:00:00','2019-01-04 22:00:00']
+            ['2019-01-04 10:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 19:00:00','2019-01-04 22:00:00'],
+            ['2019-01-04 15:00:00','2019-01-04 18:00:00']
         ];
     }
     
@@ -509,6 +685,202 @@ class Test
     {
         return [
             ['2019-01-04 08:00:00','2019-01-04 19:00:00'],
+        ];
+    }
+    
+    /**
+     * Test Data - Gap
+     * @return array
+     */
+    public static function testGapData()
+    {
+        return [
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00','2019-01-04 05:00:00'],
+            ['2019-01-04 07:00:00','2019-01-04 09:00:00'],
+            ['2019-01-04 13:00:00','2019-01-04 18:00:00']
+        ];
+    }
+    
+    /**
+     * Expected Data - Gap
+     * @return array
+     */
+    public static function testGapExpected()
+    {
+        return [
+            ['2019-01-04 05:00:00','2019-01-04 07:00:00'],
+            ['2019-01-04 12:00:00','2019-01-04 13:00:00'],
+        ];
+    }
+    
+    /**
+     * Test Data - Time
+     * @return array
+     */
+    public static function testTimeData()
+    {
+        return [
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00','2019-01-04 05:00:00'],
+            ['2019-01-04 07:00:00','2019-01-04 09:00:00'],
+            ['2019-01-04 13:00:00','2019-01-04 18:00:00']
+        ];
+    }
+    
+    /**
+     * Expected Data - Time
+     * @return array
+     */
+    public static function testTimeExpected()
+    {
+        return 39600;
+    }
+    
+    /**
+     * Test Data - Format
+     * @return array
+     */
+    public static function testFormatData()
+    {
+        return [
+            ['2019-01-04 08:11:11','2019-01-04 12:22:22'],
+            ['2019-01-04 04:33:33','2019-01-04 05:44:44'],
+        ];
+    }
+    
+    /**
+     * Expected Data - Format
+     * @return array
+     */
+    public static function testFormatExpectedS()
+    {
+        return [
+            ['2019-01-04 08:11:11','2019-01-04 12:22:22'],
+            ['2019-01-04 04:33:33','2019-01-04 05:44:44'],
+        ];
+    }
+    
+    /**
+     * Expected Data - Format
+     * @return array
+     */
+    public static function testFormatExpectedM()
+    {
+        return [
+            ['2019-01-04 08:11:00','2019-01-04 12:22:00'],
+            ['2019-01-04 04:33:00','2019-01-04 05:44:00'],
+        ];
+    }
+    
+    /**
+     * Expected Data - Format
+     * @return array
+     */
+    public static function testFormatExpectedH()
+    {
+        return [
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00','2019-01-04 05:00:00'],
+        ];
+    }
+    
+    /**
+     * Test Data - Validate
+     * @return array
+     */
+    public static function testValidateData1()
+    {
+        return [
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00','2019-01-04 05:00:00'],
+        ];
+    }
+    
+    /**
+     * Test Data - Validate
+     * @return array
+     */
+    public static function testValidateData2()
+    {
+        return [
+            ['2019-01-04 02:00:00','2019-01-04 03:00:00'],
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00'],
+            ['2019-01-04 04:00','2019-01-04 05:00:00'],
+            'string',
+            ['2019-01-04 08:00:00','2019-01-04 05:00:00'],
+            ['2019-01-04 19:00:00','2019-01-04 19:00:00'],
+        ];
+    }
+    
+    /**
+     * Expected Data - FormValidateat
+     * @return array
+     */
+    public static function testValidateExpected1()
+    {
+        return true;
+    }
+    
+    /**
+     * Expected Data - FormValidateat
+     * @return array
+     */
+    public static function testValidateExpected2()
+    {
+        return false;
+    }
+    
+    /**
+     * Test Data - Filter
+     * @return array
+     */
+    public static function testFilterData1()
+    {
+        return [
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00','2019-01-04 05:00:00'],
+        ];
+    }
+    
+    /**
+     * Test Data - Filter
+     * @return array
+     */
+    public static function testFilterData2()
+    {
+        return [
+            ['2019-01-04 02:00:00','2019-01-04 03:00:00'],
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00'],
+            ['2019-01-04 04:00','2019-01-04 05:00:00'],
+            'string',
+            ['2019-01-04 08:00:00','2019-01-04 05:00:00'],
+            ['2019-01-04 19:00:00','2019-01-04 19:00:00'],
+        ];
+    }
+    
+    /**
+     * Expected Data - Filter
+     * @return array
+     */
+    public static function testFilterExpected1()
+    {
+        return [
+            ['2019-01-04 08:00:00','2019-01-04 12:00:00'],
+            ['2019-01-04 04:00:00','2019-01-04 05:00:00'],
+        ];
+    }
+    
+    /**
+     * Expected Data - Filter
+     * @return array
+     */
+    public static function testFilterExpected2()
+    {
+        return [
+            ['2019-01-04 02:00:00','2019-01-04 03:00:00'],
         ];
     }
 

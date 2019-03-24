@@ -25,7 +25,19 @@ Test::testIsOverlap();
 // Test Fill
 Test::testFill();
 
+// Test Gap
+Test::testGap();
 
+// Test Time
+Test::testTime();
 
+// Test Format
+Test::testFormat();
+
+// Test Validate
+Test::testValidate();
+
+// Test Filter
+Test::testFilter();
 
 

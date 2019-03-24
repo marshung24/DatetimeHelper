@@ -5,16 +5,45 @@ namespace marshung\helper;
  * Time Period Helper
  *
  * 1. Format: $timePeriods = [[$startDatetime1, $endDatetime1], [$startDatetime2, $endDatetime2], ...];
- * - $Datetime = Y-m-d H:i:s ; Y-m-d H:i:00 ; Y-m-d H:i ; Y-m-d ;
+ * - $Datetime = Y-m-d H:i:s ; Y-m-d H:i:00 ; Y-m-d H:00:00 ;
  * 2. If it is hour/minute/second, the end point is usually not included, for example, 8 o'clock to 9 o'clock is 1 hour.
  * 3. If it is a day/month/year, it usually includes an end point, for example, January to March is 3 months.
  * 4. When processing, assume that the data format is correct. If necessary, you need to call the verification function to verify the data.
  *
  * @author Mars Hung <tfaredxj@gmail.com>
+ * @see https://github.com/marshung24/helper#TimePeriodHelper
  */
 class TimePeriodHelper
 {
-
+    /**
+     * Option set
+     * @var array
+     */
+    protected static $_options = [
+        'unit' => [
+            // Time calculate unit - hour, minute, second(default)
+            'time' => 'second',
+            // Format unit - hour, minute, second(default)
+            'format' => 'second',
+        ],
+        'unitMap' => [
+            'hour' => 'hour',
+            'hours' => 'hour',
+            'h' => 'hour',
+            'minute' => 'minute',
+            'minutes' => 'minute',
+            'i' => 'minute',
+            'm' => 'minute',
+            'second' => 'second',
+            'seconds' => 'second',
+            's' => 'second',
+        ],
+        'filter' => [
+            'isDatetime' => true
+        ],
+    ];
+    
+    
     /**
      * *********************************************
      * ************** Public Function **************
@@ -24,6 +53,7 @@ class TimePeriodHelper
     /**
      * Sort time periods (Order by ASC)
      * 
+     * When sorting, sort the start time first, if the start time is the same, then sort the end time
      * Sort Priority: Start Time => End Time
      * 
      * @param array $timePeriods
@@ -49,7 +79,9 @@ class TimePeriodHelper
     
     /**
      * Union one or more time periods
-     *
+     * 
+     * Sort and merge one or more time periods with contacts
+     * 
      * TimePeriodHelper::union($timePeriods1, $timePeriods2, $timePeriods3, ......);
      * 
      * @param array $timePeriods
@@ -88,7 +120,7 @@ class TimePeriodHelper
      * 
      * Compares $timePeriods1 against $timePeriods2 and returns the values in $timePeriods1 that are not present in $timePeriods2.
      * 
-     * TimePeriodHelper::diff($timePeriods1, $timePeriods2);
+     * TimePeriodHelper::diff($timePeriods1, $timePeriods2, $sortOut);
      * 
      * @param array $timePeriods1
      * @param array $timePeriods2
@@ -206,10 +238,12 @@ class TimePeriodHelper
     }
     
     /**
-     * Determine if the time period overlaps
+     * Time period is overlap
+     * 
+     * Determine if there is overlap between the two time periods
      * 
      * Only when there is no intersection, no data is needed.
-     * Logic is similar to intersect
+     * Logic is similar to intersect.
      *  
      * @param array $timePeriods1
      * @param array $timePeriods2
@@ -283,52 +317,268 @@ class TimePeriodHelper
      * Get gap time periods of multiple sets of time periods
      * 
      * @param array $timePeriods
+     * @param bool $sortOut Whether the input needs to be rearranged, default true
      * @return array
      */
-    public static function gap(Array $timePeriods)
+    public static function gap(Array $timePeriods, $sortOut = true)
     {
+        // Subject is empty, do nothing
+        if (empty($timePeriods)) {
+            return [];
+        }
+        
+        // Data sorting out
+        if ($sortOut) {
+            $timePeriods = self::union($timePeriods);
+        }
+        
         $opt = [];
+        foreach ($timePeriods as $k => $tp) {
+            if (isset($timePeriods[$k+1])) {
+                $opt[] = [$tp[1], $timePeriods[$k+1][0]];
+            }
+        }
         
         return $opt;
     }
 
     /**
-     * Calculation period total time, Need to specify the minimum unit(from unit())
+     * Calculation period total time
+     * 
+     * You can specify the smallest unit (from setUnit())
      * 
      * @param array $timePeriods
+     * @param bool $sortOut Whether the input needs to be rearranged, default true
      * @return number
      */
-    public static function time(Array $timePeriods)
+    public static function time(Array $timePeriods, $sortOut = true)
     {
-        $opt = 0;
+        // Subject is empty, do nothing
+        if (empty($timePeriods)) {
+            return 0;
+        }
         
-        return $opt;
+        // Data sorting out
+        if ($sortOut) {
+            $timePeriods = self::union($timePeriods);
+        }
+        
+        // Calculate time
+        $time = 0;
+        foreach ($timePeriods as $k => $tp) {
+            $time += strtotime($tp[1]) - strtotime($tp[0]);
+        }
+        
+        // Time unit convert
+        switch (self::getUnit('time')) {
+            case 'minute':
+                $time = floor($time / 60);
+                break;
+            case 'hour':
+                $time = floor($time / 3600);
+                break;
+        }
+        
+        return $time;
     }
 
     /**
-     * Specify the minimum unit of calculation(day,minute,second)
+     * Transform format
+     * 
+     * @param array $timePeriods
+     * @param string $unit Time unit, if default,use class options setting
+     * @return array
      */
-    public static function unit()
-    {}
-
-    /**
-     */
-    public static function format()
-    {}
+    public static function format(Array $timePeriods, $unit = 'default')
+    {
+        foreach ($timePeriods as $k => & $tp) {
+            $tp[0] = self::timeConv($tp[0], $unit);
+            $tp[1] = self::timeConv($tp[1], $unit);
+        }
+        
+        return $timePeriods;
+    }
     
     /**
+     * Validate time period
+     * 
+     * Verify format, size, start/end time
+     * 
+     * @param array $timePeriods
+     * @throws \Exception
+     * @return bool
      */
-    public static function validate()
-    {}
+    public static function validate($timePeriods)
+    {
+        self::filter($timePeriods, true);
+        return true;
+    }
     
     /**
+     * Remove invalid time period
+     * 
+     * Verify format, size, start/end time, and remove invalid.
+     * 
+     * @param array $timePeriods
+     * @param bool $exception Whether an exception is returned when an error occurs.(default false)
+     * @throws \Exception
+     * @return array
      */
-    public static function filter()
-    {}
-
+    public static function filter($timePeriods, $exception = false)
+    {
+        // If not array, return.
+        if (! is_array($timePeriods)) {
+            if ($exception)
+                throw new \Exception('Time periods format error !', 400);
+            return [];
+        }
+        
+        foreach ($timePeriods as $k => $tp) {
+            // filter format, number
+            if (! is_array($tp) || sizeof($tp) != 2) {
+                if ($exception)
+                    throw new \Exception('Time periods format error !', 400);
+                unset($timePeriods[$k]);
+                continue;
+            }
+            // filter time period
+            if ($tp[0] >= $tp[1]) {
+                if ($exception)
+                    throw new \Exception('Time periods format error !', 400);
+                unset($timePeriods[$k]);
+                continue;
+            }
+            // filter time format
+            if (self::$_options['filter']['isDatetime'] && (! self::isDatetime($tp[0]) || ! self::isDatetime($tp[1]))) {
+                if ($exception)
+                    throw new \Exception('Time periods format error !', 400);
+                unset($timePeriods[$k]);
+                continue;
+            }
+        }
+        
+        return $timePeriods;
+    }
+    
+    
+    /**
+     * **********************************************
+     * ************** Options Function **************
+     * **********************************************
+     */
+    
+    
+    /**
+     * Specify the minimum unit of calculation
+     * 
+     * hour,minute,second
+     * 
+     * @param string $unit
+     * @param string $target Specify function,or all functions
+     * @throws \Exception
+     * @return $this
+     */
+    public static function setUnit(string $unit, string $target = 'all')
+    {
+        /*** Arguments prepare ***/
+        if (! isset(self::$_options['unitMap'][$unit])) {
+            throw new \Exception('Error Unit: ' . $unit, 400);
+        }
+        // conv unit
+        $unit = self::$_options['unitMap'][$unit];
+        
+        if ($target != 'all' && ! isset(self::$_options['unit'][$target])) {
+            throw new \Exception('Error Target: ' . $target, 400);
+        }
+        
+        /* Setting */
+        
+        if ($target != 'all') {
+            self::$_options['unit'][$target] = $unit;
+        } else {
+            foreach (self::$_options['unit'] as $tar => & $value) {
+                $value = $unit;
+            }
+        }
+        
+        return new static();
+    }
+    
+    /**
+     * Get the unit used by the specified function
+     * 
+     * @param string $target Specify function's unit
+     * @throws \Exception
+     * @return string
+     */
+    public static function getUnit(string $target)
+    {
+        if (isset(self::$_options['unit'][$target])) {
+            return self::$_options['unit'][$target];
+        } else {
+            throw new \Exception('Error Target: ' . $target, 400);
+        }
+    }
+    
+    /**
+     * If neet filter datetime : Set option
+     * 
+     * @param bool $bool
+     * @return $this
+     */
+    public static function setFilterDatetime($bool)
+    {
+        self::$_options['filter']['isDatetime'] = !!$bool;
+        
+        return new static();
+    }
+    
+    /**
+     * If neet filter datetime : Get option
+     * 
+     * @return bool
+     */
+    public static function getFilterDatetime()
+    {
+        return self::$_options['filter']['isDatetime'];
+    }
+    
     /**
      * **********************************************
      * ************** Private Function **************
      * **********************************************
      */
+    
+    /**
+     * Check datetime fast
+     * 
+     * Only check format,no check for reasonableness
+     * 
+     * @param string $datetime
+     * @return boolean
+     */
+    protected static function isDatetime(string $datetime)
+    {
+        return preg_match('|^[0-9]{4}\-[0-9]{2}\-[0-9]{2}\ [0-9]{2}\:[0-9]{2}\:[0-9]{2}$|', $datetime);
+    }
+    
+    /**
+     * 
+     * @param string $datetime
+     * @param string $unit Time unit, if default,use self::$_options setting
+     * @return string
+     */
+    protected static function timeConv(string $datetime, $unit = 'default')
+    {
+        $unit = ! isset(self::$_options['unitMap'][$unit]) ? self::$_options['unit']['time'] : self::$_options['unitMap'][$unit];
+        
+        if ($unit == 'minute') {
+            $datetime = substr_replace($datetime, "00", 17, 2);
+        } elseif ($unit == 'hour') {
+            $datetime = substr_replace($datetime, "00:00", 14, 5);
+        }
+        
+        return $datetime;
+    }
+    
 }

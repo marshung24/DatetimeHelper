@@ -157,10 +157,20 @@ class DatetimeHelper
         return false;
     }
     
-    public static function isTime()
+    /**
+     * Determine if the time is legal
+     * 
+     * @param String $datetime
+     */
+    public static function isTime(String $datetime)
     {}
     
-    public static function isDatetime()
+    /**
+     * Determine if the datetime is legal
+     * 
+     * @param string $datetime
+     */
+    public static function isDatetime(String $datetime)
     {}
     
     /**
