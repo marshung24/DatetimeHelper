@@ -1,5 +1,5 @@
 <?php
-namespace marshung\helper;
+namespace marsapp\helper\datetime;
 
 /**
  * Date/Time Helper for PHP code
@@ -10,20 +10,29 @@ class DatetimeHelper
 {
     
     /**
+     * Allow time unit list
+     * @var array
+     */
+    protected static $allowUnit = ['second'=>'', 'minute'=>'', 'hour'=>'', 'day'=>'', 'month'=>'', 'year'=>'', 'seconds'=>'', 'minutes'=>'', 'hours'=>'', 'days'=>'', 'months'=>'', 'years'=>''];
+    
+    /**
+     * SSpecial treatment list
+     * @var array
+     */
+    protected static $specialUnit = ['month'=>'', 'year'=>'', 'months'=>'', 'years'=>''];
+    
+    /**
      * *********************************************
      * ************** Public Function **************
      * *********************************************
      */
-    
-    
-    
     
     /**
      * Date calculation - increase
      * 
      * @param string $date Base date
      * @param string $add Add number
-     * @param string $unit Add Unit(day,month,year)
+     * @param string $unit Add Unit(day, month, year, hour, minute, second)
      * @param string $format
      * @return string
      */
@@ -37,7 +46,7 @@ class DatetimeHelper
      * 
      * @param string $date $date Base date
      * @param string $reduce Reduce number
-     * @param string $unit Reduce Unit(day,month,year)
+     * @param string $unit Reduce Unit(day, month, year, hour, minute, second)
      * @param string $format
      * @return string
      */
@@ -51,13 +60,19 @@ class DatetimeHelper
      * 
      * @param string $date $date Base date
      * @param string $difference number(positive:add, negative:reduce)
-     * @param string $unit Unit(day,month,year)
+     * @param string $unit Unit(day, month, year, hour, minute, second)
      * @param string $format
      * @return string
      */
     public static function dateCal($date, $difference = '1', $unit = 'day', $format = 'Y-m-d')
     {
-        if (in_array($unit, ['month','year','months','years'])) {
+        // Check Allow Unit
+        if (! isset(self::$allowUnit[$unit])) {
+            throw new \Exception('Time unit error: ' . $unit, 400);
+        }
+        
+        // Calculate
+        if (isset(self::$specialUnit[$unit])) {
             // Origin date timestamp
             $timestamp = strtotime($date);
             // Change the date to the first day
@@ -100,7 +115,7 @@ class DatetimeHelper
      * Get Date Iterator - Iteration Date in Days
      *
      * Usage:
-     * $daterange = \app\helpers\DateTimeHelper::dateIterator('2018-01-01', '2018-01-31');
+     * $daterange = DateTimeHelper::dateIterator('2018-01-01', '2018-01-31');
      * foreach($daterange as $date){
      *     echo $date->format('Y-m-d') . '<br>';
      * }

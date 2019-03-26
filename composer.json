@@ -1,7 +1,7 @@
 {
-    "name": "marshung/helper",
-    "description": "PHP Helpers liberaries",
-    "homepage": "https://github.com/marshung24/io",
+    "name": "marsapp/datetimehelper",
+    "description": "DatetimeHelper library, providing format judgment, time increase and decrease, etc.",
+    "homepage": "https://github.com/marshung24/DatetimeHelper",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -11,9 +11,12 @@
         }
     ],
     "autoload": {
-        "psr-4": { "marshung\\helper\\": "src", "marshung\\helperTest\\": "test" }
+        "psr-4": { "marsapp\\helper\\datetime\\": "src", "marsapp\\helper\\test\\datetime\\": "test" }
     },
     "minimum-stability": "stable",
+    "require-dev": {
+        "marsapp/devtools": "*"
+    },
     "require": {
     }
 }

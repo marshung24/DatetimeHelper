@@ -1,13 +1,22 @@
 <?php
-$file = scandir('.');
+include_once '../vendor/autoload.php';
 
-$count = 0;
-foreach ($file as $f) {
-    // 如果是目錄且不是.開頭
-    if ((is_dir($f)) && (! preg_match("/^\..*/", $f))) {
-        $count++;
-        
-        echo $count.' => <a href="'.$f.'">'.$f."</a>";
-        echo "<br>"; 
-    }
-}
+use marsapp\helper\datetime\DatetimeHelper;
+use marsapp\helper\test\datetime\Test;
+use marsapp\dev\tools\DevTools;
+
+
+echo '<pre>';
+
+// Test IsDate
+Test::testIsDate();
+
+// Test DateAdd
+Test::testDateAdd();
+
+// Test DateReduce
+Test::testDateReduce();
+
+// Test DateCal
+Test::testDateCal();
+
